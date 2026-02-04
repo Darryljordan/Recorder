@@ -5,8 +5,14 @@ let pool;
 
 function getPool() {
   if (!pool) {
+    // Parse connection string to add SSL config
+    const connectionString = process.env.POSTGRES_URL;
+    
     pool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
+      connectionString: connectionString,
+      ssl: {
+        rejectUnauthorized: false
+      }
     });
   }
   return pool;
