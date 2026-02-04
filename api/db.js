@@ -1,9 +1,29 @@
-import { sql } from '@vercel/postgres';
+import pkg from 'pg';
+const { Pool } = pkg;
+
+let pool;
+
+function getPool() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.POSTGRES_URL,
+      ssl: {
+        rejectUnauthorized: false
+      }
+    });
+  }
+  return pool;
+}
+
+export async function query(text, params) {
+  const pool = getPool();
+  return pool.query(text, params);
+}
 
 export async function initDatabase() {
   try {
     // Create events table
-    await sql`
+    await query(`
       CREATE TABLE IF NOT EXISTS events (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -11,19 +31,19 @@ export async function initDatabase() {
         end_time VARCHAR(10) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
 
     // Create people table
-    await sql`
+    await query(`
       CREATE TABLE IF NOT EXISTS people (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
 
     // Create attendance table
-    await sql`
+    await query(`
       CREATE TABLE IF NOT EXISTS attendance (
         id SERIAL PRIMARY KEY,
         event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
@@ -31,7 +51,7 @@ export async function initDatabase() {
         marked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(event_id, person_id)
       )
-    `;
+    `);
 
     return { success: true };
   } catch (error) {

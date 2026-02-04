@@ -1,5 +1,4 @@
-import { sql } from '@vercel/postgres';
-import { initDatabase } from './db.js';
+import { query, initDatabase } from './db.js';
 
 export default async function handler(req, res) {
   // Initialize database on first request
@@ -21,7 +20,7 @@ export default async function handler(req, res) {
       
       if (!eventId) {
         // Get all attendance records with details
-        const { rows } = await sql`
+        const { rows } = await query(`
           SELECT 
             a.id,
             a.event_id,
@@ -33,22 +32,23 @@ export default async function handler(req, res) {
           JOIN events e ON a.event_id = e.id
           JOIN people p ON a.person_id = p.id
           ORDER BY a.marked_at DESC
-        `;
+        `);
         return res.status(200).json(rows);
       }
 
       // Get attendance for specific event
-      const { rows } = await sql`
-        SELECT 
+      const { rows } = await query(
+        `SELECT 
           a.id,
           a.person_id,
           a.marked_at,
           p.name as person_name
         FROM attendance a
         JOIN people p ON a.person_id = p.id
-        WHERE a.event_id = ${eventId}
-        ORDER BY a.marked_at DESC
-      `;
+        WHERE a.event_id = $1
+        ORDER BY a.marked_at DESC`,
+        [eventId]
+      );
       
       return res.status(200).json(rows);
     }
@@ -62,20 +62,19 @@ export default async function handler(req, res) {
       }
 
       // Check if already marked
-      const { rows: existing } = await sql`
-        SELECT id FROM attendance 
-        WHERE event_id = ${eventId} AND person_id = ${personId}
-      `;
+      const { rows: existing } = await query(
+        'SELECT id FROM attendance WHERE event_id = $1 AND person_id = $2',
+        [eventId, personId]
+      );
 
       if (existing.length > 0) {
         return res.status(400).json({ error: 'Attendance already marked' });
       }
 
-      const { rows } = await sql`
-        INSERT INTO attendance (event_id, person_id)
-        VALUES (${eventId}, ${personId})
-        RETURNING *
-      `;
+      const { rows } = await query(
+        'INSERT INTO attendance (event_id, person_id) VALUES ($1, $2) RETURNING *',
+        [eventId, personId]
+      );
       
       return res.status(201).json(rows[0]);
     }
@@ -88,7 +87,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Attendance ID required' });
       }
 
-      await sql`DELETE FROM attendance WHERE id = ${id}`;
+      await query('DELETE FROM attendance WHERE id = $1', [id]);
       
       return res.status(200).json({ success: true });
     }

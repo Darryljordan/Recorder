@@ -1,5 +1,4 @@
-import { sql } from '@vercel/postgres';
-import { initDatabase } from './db.js';
+import { query, initDatabase } from './db.js';
 
 export default async function handler(req, res) {
   // Initialize database on first request
@@ -17,9 +16,9 @@ export default async function handler(req, res) {
   try {
     // GET all events
     if (req.method === 'GET') {
-      const { rows } = await sql`
-        SELECT * FROM events ORDER BY start_time DESC
-      `;
+      const { rows } = await query(
+        'SELECT * FROM events ORDER BY start_time DESC'
+      );
       return res.status(200).json(rows);
     }
 
@@ -31,11 +30,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const { rows } = await sql`
-        INSERT INTO events (name, start_time, end_time)
-        VALUES (${name}, ${startTime}, ${endTime})
-        RETURNING *
-      `;
+      const { rows } = await query(
+        'INSERT INTO events (name, start_time, end_time) VALUES ($1, $2, $3) RETURNING *',
+        [name, startTime, endTime]
+      );
       
       return res.status(201).json(rows[0]);
     }
@@ -48,12 +46,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const { rows } = await sql`
-        UPDATE events
-        SET name = ${name}, start_time = ${startTime}, end_time = ${endTime}
-        WHERE id = ${id}
-        RETURNING *
-      `;
+      const { rows } = await query(
+        'UPDATE events SET name = $1, start_time = $2, end_time = $3 WHERE id = $4 RETURNING *',
+        [name, startTime, endTime, id]
+      );
       
       if (rows.length === 0) {
         return res.status(404).json({ error: 'Event not found' });
@@ -70,7 +66,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Event ID required' });
       }
 
-      await sql`DELETE FROM events WHERE id = ${id}`;
+      await query('DELETE FROM events WHERE id = $1', [id]);
       
       return res.status(200).json({ success: true });
     }
