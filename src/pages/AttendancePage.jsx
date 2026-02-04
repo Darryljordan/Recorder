@@ -23,33 +23,49 @@ function AttendancePage() {
   const fetchEvents = async () => {
     try {
       const response = await fetch(`${API_URL}/events`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
-      setEvents(data);
-      if (data.length > 0 && !selectedEvent) {
-        setSelectedEvent(data[0]);
+      const eventsData = Array.isArray(data) ? data : [];
+      setEvents(eventsData);
+      if (eventsData.length > 0 && !selectedEvent) {
+        setSelectedEvent(eventsData[0]);
       }
     } catch (err) {
-      setError('Failed to fetch events');
+      console.error('Failed to fetch events:', err);
+      setError('Failed to fetch events. Please check if the database is connected.');
+      setEvents([]);
     }
   };
 
   const fetchPeople = async () => {
     try {
       const response = await fetch(`${API_URL}/people`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
-      setPeople(data);
+      setPeople(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError('Failed to fetch people');
+      console.error('Failed to fetch people:', err);
+      setError('Failed to fetch people. Please check if the database is connected.');
+      setPeople([]);
     }
   };
 
   const fetchAttendance = async (eventId) => {
     try {
       const response = await fetch(`${API_URL}/attendance?eventId=${eventId}`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
-      setAttendance(data);
+      setAttendance(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError('Failed to fetch attendance');
+      console.error('Failed to fetch attendance:', err);
+      setError('Failed to fetch attendance. Please check if the database is connected.');
+      setAttendance([]);
     }
   };
 

@@ -14,10 +14,15 @@ function PeoplePage() {
   const fetchPeople = async () => {
     try {
       const response = await fetch(`${API_URL}/people`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
-      setPeople(data);
+      setPeople(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError('Failed to fetch people');
+      console.error('Failed to fetch people:', err);
+      setError('Failed to fetch people. Please check if the database is connected.');
+      setPeople([]);
     }
   };
 

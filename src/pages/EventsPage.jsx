@@ -19,10 +19,15 @@ function EventsPage() {
   const fetchEvents = async () => {
     try {
       const response = await fetch(`${API_URL}/events`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
-      setEvents(data);
+      setEvents(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError('Failed to fetch events');
+      console.error('Failed to fetch events:', err);
+      setError('Failed to fetch events. Please check if the database is connected.');
+      setEvents([]);
     }
   };
 

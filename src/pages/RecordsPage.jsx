@@ -13,10 +13,15 @@ function RecordsPage() {
   const fetchRecords = async () => {
     try {
       const response = await fetch(`${API_URL}/attendance`);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
       const data = await response.json();
-      setRecords(data);
+      setRecords(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError('Failed to fetch records');
+      console.error('Failed to fetch records:', err);
+      setError('Failed to fetch records. Please check if the database is connected.');
+      setRecords([]);
     }
   };
 
