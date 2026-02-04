@@ -5,8 +5,13 @@ let pool;
 
 function getPool() {
   if (!pool) {
-    // Parse connection string to add SSL config
-    const connectionString = process.env.POSTGRES_URL;
+    let connectionString = process.env.POSTGRES_URL;
+    
+    // Remove query parameters that cause issues
+    connectionString = connectionString.split('?')[0];
+    
+    // Use direct connection (port 5432) instead of pooler (6543)
+    connectionString = connectionString.replace(':6543/', ':5432/');
     
     pool = new Pool({
       connectionString: connectionString,
