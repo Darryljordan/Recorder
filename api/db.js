@@ -57,6 +57,7 @@ export async function initDatabase() {
         event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
         person_id INTEGER REFERENCES people(id) ON DELETE CASCADE,
         marked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_online BOOLEAN DEFAULT FALSE,
         UNIQUE(event_id, person_id)
       )
     `);

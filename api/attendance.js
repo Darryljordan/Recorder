@@ -26,6 +26,7 @@ export default async function handler(req, res) {
             a.event_id,
             a.person_id,
             a.marked_at,
+            a.is_online,
             e.name as event_name,
             p.name as person_name
           FROM attendance a
@@ -42,6 +43,7 @@ export default async function handler(req, res) {
           a.id,
           a.person_id,
           a.marked_at,
+          a.is_online,
           p.name as person_name
         FROM attendance a
         JOIN people p ON a.person_id = p.id
@@ -55,7 +57,7 @@ export default async function handler(req, res) {
 
     // POST mark attendance
     if (req.method === 'POST') {
-      const { eventId, personId } = req.body;
+      const { eventId, personId, isOnline } = req.body;
       
       if (!eventId || !personId) {
         return res.status(400).json({ error: 'Event ID and Person ID required' });
@@ -72,8 +74,8 @@ export default async function handler(req, res) {
       }
 
       const { rows } = await query(
-        'INSERT INTO attendance (event_id, person_id) VALUES ($1, $2) RETURNING *',
-        [eventId, personId]
+        'INSERT INTO attendance (event_id, person_id, is_online) VALUES ($1, $2, $3) RETURNING *',
+        [eventId, personId, isOnline || false]
       );
       
       return res.status(201).json(rows[0]);

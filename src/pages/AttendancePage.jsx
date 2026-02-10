@@ -69,7 +69,7 @@ function AttendancePage() {
     }
   };
 
-  const markPresent = async (personId) => {
+  const markPresent = async (personId, isOnline = false) => {
     if (!selectedEvent) {
       setError('Please select an event first');
       return;
@@ -82,6 +82,7 @@ function AttendancePage() {
         body: JSON.stringify({
           eventId: selectedEvent.id,
           personId,
+          isOnline,
         }),
       });
 
@@ -187,25 +188,54 @@ function AttendancePage() {
               <h4>{person.name}</h4>
               <div className="status">
                 {attendanceRecord
-                  ? `✓ Present (${new Date(attendanceRecord.marked_at).toLocaleTimeString()})`
+                  ? `✓ Present (${attendanceRecord.is_online ? 'Online' : 'In-Person'}) - ${new Date(attendanceRecord.marked_at).toLocaleTimeString()}`
                   : 'Absent'}
               </div>
               {attendanceRecord ? (
                 <button
                   className="btn btn-secondary"
                   onClick={() => unmarkPresent(attendanceRecord.id)}
-                  style={{ marginTop: '0.5rem', width: '100%' }}
+                  style={{ marginTop: '0.75rem', width: '100%' }}
                 >
                   Unmark
                 </button>
               ) : (
-                <button
-                  className="btn btn-success"
-                  onClick={() => markPresent(person.id)}
-                  style={{ marginTop: '0.5rem', width: '100%' }}
-                >
-                  Mark Present
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
+                  <button
+                    className="btn btn-success"
+                    onClick={() => markPresent(person.id, false)}
+                    style={{ 
+                      width: '100%',
+                      padding: '0.625rem 0.75rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.4rem'
+                    }}
+                  >
+                    <span style={{ fontSize: '1rem' }}>👤</span>
+                    In-Person
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => markPresent(person.id, true)}
+                    style={{ 
+                      width: '100%',
+                      padding: '0.625rem 0.75rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.4rem'
+                    }}
+                  >
+                    <span style={{ fontSize: '1rem' }}>🌐</span>
+                    Online
+                  </button>
+                </div>
               )}
             </div>
           );

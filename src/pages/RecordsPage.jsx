@@ -32,10 +32,11 @@ function RecordsPage() {
     }
 
     // Create CSV content
-    const headers = ['Event', 'Person', 'Marked At'];
+    const headers = ['Event', 'Person', 'Attendance Type', 'Marked At'];
     const rows = records.map((record) => [
       record.event_name,
       record.person_name,
+      record.is_online ? 'Online' : 'In-Person',
       new Date(record.marked_at).toLocaleString(),
     ]);
 
@@ -83,6 +84,7 @@ function RecordsPage() {
               <tr>
                 <th>Event</th>
                 <th>Person</th>
+                <th>Attendance Type</th>
                 <th>Marked At</th>
               </tr>
             </thead>
@@ -91,6 +93,18 @@ function RecordsPage() {
                 <tr key={record.id}>
                   <td>{record.event_name}</td>
                   <td>{record.person_name}</td>
+                  <td>
+                    <span style={{ 
+                      padding: '0.25rem 0.5rem', 
+                      borderRadius: '4px', 
+                      fontSize: '0.85rem',
+                      backgroundColor: record.is_online ? '#e3f2fd' : '#f1f8e9',
+                      color: record.is_online ? '#1976d2' : '#558b2f',
+                      fontWeight: '500'
+                    }}>
+                      {record.is_online ? '🌐 Online' : '👤 In-Person'}
+                    </span>
+                  </td>
                   <td>{new Date(record.marked_at).toLocaleString()}</td>
                 </tr>
               ))}

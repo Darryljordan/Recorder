@@ -136,7 +136,8 @@ app.get('/api/attendance', (req, res) => {
       return {
         ...a,
         event_name: event?.name || 'Unknown',
-        person_name: person?.name || 'Unknown'
+        person_name: person?.name || 'Unknown',
+        is_online: a.is_online || false
       };
     });
     return res.json(records);
@@ -149,7 +150,8 @@ app.get('/api/attendance', (req, res) => {
       const person = db.people.find(p => p.id === a.person_id);
       return {
         ...a,
-        person_name: person?.name || 'Unknown'
+        person_name: person?.name || 'Unknown',
+        is_online: a.is_online || false
       };
     });
   
@@ -158,7 +160,7 @@ app.get('/api/attendance', (req, res) => {
 
 app.post('/api/attendance', (req, res) => {
   const db = readDB();
-  const { eventId, personId } = req.body;
+  const { eventId, personId, isOnline } = req.body;
   
   // Check if already marked
   const existing = db.attendance.find(
@@ -173,7 +175,8 @@ app.post('/api/attendance', (req, res) => {
     id: db.nextId.attendance++,
     event_id: eventId,
     person_id: personId,
-    marked_at: new Date().toISOString()
+    marked_at: new Date().toISOString(),
+    is_online: isOnline || false
   };
   
   db.attendance.push(newAttendance);
