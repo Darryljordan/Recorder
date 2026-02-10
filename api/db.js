@@ -57,10 +57,19 @@ export async function initDatabase() {
         event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
         person_id INTEGER REFERENCES people(id) ON DELETE CASCADE,
         marked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        is_online BOOLEAN DEFAULT FALSE,
         UNIQUE(event_id, person_id)
       )
     `);
+
+    // Migration: Add is_online column if it doesn't exist
+    try {
+      await query(`
+        ALTER TABLE attendance 
+        ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT FALSE
+      `);
+    } catch (migrationError) {
+      console.log('Migration note:', migrationError.message);
+    }
 
     return { success: true };
   } catch (error) {
